@@ -158,6 +158,16 @@ export async function initDb() {
 
         INSERT INTO subscription (id, tenant_id, plan_id, status, start_date, current_period_start, current_period_end)
         VALUES ('66666666-6666-6666-6666-666666666666', '11111111-1111-1111-1111-111111111111', '44444444-4444-4444-4444-444444444444', 'active', NOW() - INTERVAL '15 days', NOW() - INTERVAL '15 days', NOW() + INTERVAL '15 days');
+        
+        -- Seed Super Admin User (admin@billforge.com / admin123)
+        INSERT INTO tenant (id, name, billing_email, status)
+        VALUES ('77777777-7777-7777-7777-777777777777', 'System Admin', 'admin@billforge.com', 'active');
+
+        INSERT INTO app_user (id, tenant_id, email, password_hash, status)
+        VALUES ('88888888-8888-8888-8888-888888888888', '77777777-7777-7777-7777-777777777777', 'admin@billforge.com', crypt('admin123', gen_salt('bf')), 'active');
+
+        INSERT INTO user_role (id, user_id, tenant_id, role)
+        VALUES ('99999999-9999-9999-9999-999999999999', '88888888-8888-8888-8888-888888888888', '77777777-7777-7777-7777-777777777777', 'super_admin');
       `);
       console.log("Demo data seeded.");
     } else {

@@ -360,6 +360,7 @@ function AppContent() {
             {activeTab === "terms" && <Terms />}
             {activeTab === "privacy" && <Privacy />}
             {activeTab === "support" && <Support />}
+            {activeTab === "admin" && <AdminDashboard token={token} />}
           </>
         )}
       </main>

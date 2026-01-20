@@ -92,3 +92,31 @@ export interface Notification {
 export interface NotificationsResponse {
   notifications: Notification[];
 }
+
+// Admin Types
+export interface AdminStatsResponse {
+  totalTenants: number;
+  activeSubscriptions: number;
+  mrrCents: number;
+  failedPaymentsCount: number;
+  currency: string;
+}
+
+export interface FailedPayment {
+  id: string;
+  amountCents: number;
+  currency: string;
+  createdAt: string;
+  status: string;
+  tenantName: string;
+  billingEmail: string;
+}
+
+export interface AdminTenant {
+  id: string;
+  name: string;
+  email: string;
+  status: string;
+  joinedAt: string;
+  activeSubs: number;
+}
