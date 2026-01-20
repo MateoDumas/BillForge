@@ -14,6 +14,7 @@ import { paymentsRouter } from "./routes/payments";
 import { notificationsRouter } from "./routes/notifications";
 import { authRouter } from "./routes/auth";
 import { adminRouter } from "./routes/admin";
+import { profileRouter } from "./routes/profile";
 import { initDb } from "./db";
 
 const app = express();
