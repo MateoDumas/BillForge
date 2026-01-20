@@ -146,7 +146,7 @@ export async function initDb() {
         VALUES ('11111111-1111-1111-1111-111111111111', 'Demo Tenant', 'demo@example.com', 'active');
 
         INSERT INTO app_user (id, tenant_id, email, password_hash, status)
-        VALUES ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'owner@example.com', 'demo-hash', 'active');
+        VALUES ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'owner@example.com', crypt('admin123', gen_salt('bf')), 'active');
 
         INSERT INTO user_role (id, user_id, tenant_id, role)
         VALUES ('33333333-3333-3333-3333-333333333333', '22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', 'owner');
@@ -160,6 +160,13 @@ export async function initDb() {
         VALUES ('66666666-6666-6666-6666-666666666666', '11111111-1111-1111-1111-111111111111', '44444444-4444-4444-4444-444444444444', 'active', NOW() - INTERVAL '15 days', NOW() - INTERVAL '15 days', NOW() + INTERVAL '15 days');
       `);
       console.log("Demo data seeded.");
+    } else {
+        // Fix existing demo user password if needed (for users who already deployed with 'demo-hash')
+        await client.query(`
+            UPDATE app_user 
+            SET password_hash = crypt('admin123', gen_salt('bf')) 
+            WHERE email = 'owner@example.com' AND password_hash = 'demo-hash'
+        `);
     }
 
     console.log("Database initialized successfully.");

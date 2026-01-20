@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { deleteWithAuth, getWithAuth, postWithAuth } from "./api";
 import "./App.css";
-import { CopyButton } from "./components/CopyButton";
 import { Dashboard } from "./components/Dashboard";
 import { Footer } from "./components/Footer";
 import { Invoices } from "./components/Invoices";
@@ -10,7 +9,7 @@ import { Subscription } from "./components/Subscription";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { Notifications } from "./components/Notifications";
+import { Login } from "./components/Login";
 import {
   CreateSubscriptionResponse,
   InvoicesResponse,

@@ -12,6 +12,7 @@ import { stripeWebhookHandler } from "./routes/webhooks";
 import { invoicesRouter } from "./routes/invoices";
 import { paymentsRouter } from "./routes/payments";
 import { notificationsRouter } from "./routes/notifications";
+import { authRouter } from "./routes/auth";
 import { initDb } from "./db";
 
 const app = express();
