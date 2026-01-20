@@ -9,6 +9,7 @@ import { Subscription } from "./components/Subscription";
 import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider, useToast } from "./context/ToastContext";
 import { ThemeToggle } from "./components/ThemeToggle";
+import { Notifications } from "./components/Notifications";
 import { Login } from "./components/Login";
 import {
   CreateSubscriptionResponse,
