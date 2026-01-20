@@ -38,8 +38,13 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 
     res.json({ token, user: { email: user.email, role: user.role } });
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    // Return actual error for debugging (remove in production later)
+    res.status(500).json({ 
+      error: "Internal server error", 
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });

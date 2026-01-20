@@ -46,6 +46,15 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/health/db", async (_req, res) => {
+  try {
+    const result = await import("./db").then(m => m.pool.query("SELECT NOW()"));
+    res.json({ status: "ok", time: result.rows[0].now });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
 // Public Routes
 app.use("/api/auth", authRouter);
 
