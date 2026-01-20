@@ -19,12 +19,21 @@ export function authMiddleware(
   res: Response,
   next: NextFunction
 ) {
+  // Debug logging
+  console.log(`[AuthMiddleware] Processing ${req.method} ${req.originalUrl}`);
+
   if (req.method === "OPTIONS") {
     return next();
   }
 
   // Bypass authentication for public routes (e.g., login)
-  if (req.path.startsWith("/api/auth") || req.originalUrl.startsWith("/api/auth")) {
+  // Checking both path and originalUrl, and also specifically for 'login' to be safe
+  if (
+    req.path.startsWith("/api/auth") || 
+    req.originalUrl.startsWith("/api/auth") ||
+    req.originalUrl.includes("/login")
+  ) {
+    console.log("[AuthMiddleware] Bypassing auth for public route");
     return next();
   }
 
