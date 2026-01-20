@@ -14,6 +14,8 @@ import { Login } from "./components/Login";
 import { Terms } from "./components/Terms";
 import { Privacy } from "./components/Privacy";
 import { Support } from "./components/Support";
+import { UserProfile } from "./components/UserProfile";
+import { AdminDashboard } from "./components/AdminDashboard";
 import {
   CreateSubscriptionResponse,
   InvoicesResponse,
@@ -306,6 +308,28 @@ function AppContent() {
           id="payments-tab"
         >
           Pagos
+        </button>
+        {tenantInfo?.roles.includes("super_admin") && (
+          <button
+            className={`tab-btn ${activeTab === "admin" ? "active" : ""}`}
+            onClick={() => setActiveTab("admin")}
+            role="tab"
+            aria-selected={activeTab === "admin"}
+            aria-controls="admin-panel"
+            id="admin-tab"
+          >
+            Admin
+          </button>
+        )}
+        <button
+          className={`tab-btn ${activeTab === "profile" ? "active" : ""}`}
+          onClick={() => setActiveTab("profile")}
+          role="tab"
+          aria-selected={activeTab === "profile"}
+          aria-controls="profile-panel"
+          id="profile-tab"
+        >
+          Perfil
         </button>
       </nav>
 

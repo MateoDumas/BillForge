@@ -62,6 +62,7 @@ app.use("/api/auth", authRouter);
 // Protected Routes
 app.use(authMiddleware);
 app.use("/admin", adminRouter);
+app.use("/api/profile", profileRouter);
 app.use("/tenants", tenantsRouter);
 app.use("/plans", plansRouter);
 app.use("/subscriptions", subscriptionsRouter);

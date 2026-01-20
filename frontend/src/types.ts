@@ -1,3 +1,22 @@
+export interface UserProfileResponse {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    createdAt: string;
+  };
+  tenant: {
+    id: string;
+    name: string;
+    apiKey: string | null;
+  };
+  subscription: {
+    planName: string;
+    status: string;
+    currentPeriodEnd: string;
+  } | null;
+}
+
 export interface TenantMeResponse {
   tenantId: string;
   userId: string;

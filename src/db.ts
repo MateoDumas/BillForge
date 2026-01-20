@@ -19,6 +19,9 @@ export async function initDb() {
     // Enable pgcrypto
     await client.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
 
+    // Migrations
+    await client.query(`ALTER TABLE tenant ADD COLUMN IF NOT EXISTS api_key TEXT;`);
+
     // Create tables
     await client.query(`
       CREATE TABLE IF NOT EXISTS tenant (
