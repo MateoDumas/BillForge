@@ -46,6 +46,10 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+// Public Routes
+app.use("/api/auth", authRouter);
+
+// Protected Routes
 app.use(authMiddleware);
 app.use("/tenants", tenantsRouter);
 app.use("/plans", plansRouter);
