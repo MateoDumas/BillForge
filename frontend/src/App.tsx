@@ -353,11 +353,15 @@ function AppContent() {
                 onRetryPayment={handleRetryPayment}
               />
             )}
+
+            {activeTab === "terms" && <Terms />}
+            {activeTab === "privacy" && <Privacy />}
+            {activeTab === "support" && <Support />}
           </>
         )}
       </main>
 
-      <Footer />
+      <Footer onNavigate={(tab) => setActiveTab(tab as Tab)} />
     </div>
   );
 }
