@@ -11,10 +11,11 @@ export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // Use env var or default to Railway production URL if not set
-  // Ensure we don't use relative paths if the env var is missing/empty
-  const API_URL = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) 
-    ? import.meta.env.VITE_API_URL 
-    : "https://billforge.up.railway.app";
+  // HARDCODED FALLBACK FOR DEBUGGING
+  const API_URL = "https://billforge.up.railway.app";
+  // const API_URL = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) 
+  //   ? import.meta.env.VITE_API_URL 
+  //   : "https://billforge.up.railway.app";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +35,8 @@ export function Login({ onLogin }: LoginProps) {
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
         console.error("Received non-JSON response:", text);
-        throw new Error("El servidor devolvió una respuesta inválida (HTML). Verifica la conexión.");
+        // Display debug info to user
+        throw new Error(`Error de conexión. URL: ${API_URL}. Respuesta: ${text.substring(0, 50)}...`);
       }
 
       const data = await response.json();
