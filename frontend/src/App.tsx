@@ -230,6 +230,10 @@ function AppContent() {
     }
   }
 
+  if (!token) {
+    return <Login onLogin={setToken} />;
+  }
+
   return (
     <div className="container">
       <header className="app-header">
@@ -246,67 +250,17 @@ function AppContent() {
         </div>
         <div className="flex gap-2 items-center">
           <ThemeToggle />
-          {token && <Notifications token={token} />}
-          {token && (
-            <button 
-              onClick={logout} 
-              className="btn btn-ghost btn-circle" 
-              title="Cerrar sesión"
-              aria-label="Cerrar sesión"
-            >
-              <span style={{ fontSize: '1.5rem' }}>🚪</span>
-            </button>
-          )}
+          <Notifications token={token} />
+          <button 
+            onClick={logout} 
+            className="btn btn-ghost btn-circle" 
+            title="Cerrar sesión"
+            aria-label="Cerrar sesión"
+          >
+            <span style={{ fontSize: '1.5rem' }}>🚪</span>
+          </button>
         </div>
       </header>
-
-      <section className="card">
-        <h2 className="card-title">Configuración</h2>
-        <div className="input-group">
-          <label className="text-sm text-muted block mb-2">JWT Token</label>
-          <div className="relative">
-            <input
-              type="text"
-              className="form-control pr-10"
-              value={token}
-              onChange={e => setToken(e.target.value)}
-              placeholder="Pega aquí tu token de acceso..."
-            />
-            {token && (
-              <div className="absolute-center-y">
-                <CopyButton text={token} label="Token" />
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {tenantInfo && (
-          <div className="text-sm text-muted flex gap-4 flex-wrap">
-            <div className="flex items-center gap-2">
-              <strong>Tenant:</strong> 
-              <span className="font-mono">{tenantInfo.tenantId}</span>
-              <CopyButton text={tenantInfo.tenantId} label="Tenant ID" />
-            </div>
-            <div className="flex items-center gap-2">
-              <strong>Usuario:</strong> 
-              <span className="font-mono">{tenantInfo.userId}</span>
-              <CopyButton text={tenantInfo.userId} label="User ID" />
-            </div>
-            <div>
-              <strong>Roles:</strong> {tenantInfo.roles.join(", ")}
-            </div>
-          </div>
-        )}
-        
-        {error && (
-          <div className="text-error mt-2 flex items-center gap-2">
-            <span>⚠️ {error}</span>
-            <button onClick={() => loadAllData()} className="btn btn-sm btn-outline">
-              Reintentar
-            </button>
-          </div>
-        )}
-      </section>
 
       <nav className="tabs" role="tablist" aria-label="Navegación principal">
         <button
