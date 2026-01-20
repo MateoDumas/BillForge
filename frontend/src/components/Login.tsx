@@ -97,8 +97,8 @@ export function Login({ onLogin }: LoginProps) {
         </form>
         
         <div className="mt-4 text-center text-xs text-muted">
-           <p>Credenciales Demo:</p>
-           <p>owner@example.com / admin123</p>
+           <p>Credenciales:</p>
+           <p>admin@billforge.com / admin123</p>
         </div>
       </div>
     </div>
