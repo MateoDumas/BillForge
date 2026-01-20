@@ -1,7 +1,10 @@
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const hostname = window.location.hostname;
+const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
 const defaultApiUrl = isLocal 
   ? "http://localhost:3000" 
   : (import.meta.env.VITE_API_URL || "https://billforge.up.railway.app");
+
+console.log("API Config:", { hostname, isLocal, defaultApiUrl });
 
 export interface ApiResult<T> {
   data: T | null;

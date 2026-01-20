@@ -11,10 +11,13 @@ export function Login({ onLogin }: LoginProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   // Force localhost API if running on localhost, otherwise use env var or default to Railway
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const hostname = window.location.hostname;
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0';
   const API_URL = isLocal 
     ? "http://localhost:3000" 
     : (import.meta.env.VITE_API_URL || "https://billforge.up.railway.app");
+
+  console.log("Environment detection:", { hostname, isLocal, API_URL });
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
