@@ -12,9 +12,24 @@ BillForge es una plataforma SaaS integral diseñada para simplificar la gestión
 *   **💳 Gestión de Suscripciones:** Creación y administración de planes de suscripción flexibles.
 *   **🧾 Facturación Automatizada:** Generación de facturas profesionales en PDF y seguimiento de estados.
 *   **💰 Procesamiento de Pagos:** Integración con sistemas de pago, manejo de reintentos y estados de transacción.
+*   **🔑 Perfiles de Usuario y API Keys:** Gestión de perfil personal y generación de API Keys para integración directa como infraestructura.
+*   **🛡️ Panel de Super Admin:** Herramientas avanzadas para la gestión global de la plataforma (métricas, planes, jobs).
 *   **🔔 Notificaciones:** Sistema de alertas para eventos importantes (pagos fallidos, nuevas suscripciones).
 *   **🌗 Modo Oscuro/Claro:** Interfaz adaptable a las preferencias del usuario.
 *   **🔒 Seguridad:** Autenticación robusta y protección de datos.
+
+## 👥 Roles y Acceso
+
+BillForge maneja dos niveles principales de acceso:
+
+1.  **Tenant Owner (Usuario Estándar):**
+    *   Acceso al Dashboard de su organización.
+    *   Gestión de suscripciones y facturas.
+    *   **Nuevo:** Acceso a perfil de usuario y generación de API Keys (`/profile`).
+
+2.  **Super Admin:**
+    *   Acceso total a la plataforma.
+    *   **Nuevo:** Panel de administración global (`/admin`) para métricas de negocio (MRR, Tenants), gestión de planes y triggers de jobs.
 
 ## 🛠️ Tecnologías Utilizadas
 
