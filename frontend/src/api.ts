@@ -1,4 +1,4 @@
-const defaultApiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const defaultApiUrl = import.meta.env.VITE_API_URL || "https://billforge.up.railway.app";
 
 export interface ApiResult<T> {
   data: T | null;
