@@ -23,6 +23,11 @@ export function authMiddleware(
     return next();
   }
 
+  // Bypass authentication for public routes (e.g., login)
+  if (req.path.startsWith("/api/auth") || req.originalUrl.startsWith("/api/auth")) {
+    return next();
+  }
+
   const header = req.headers["authorization"];
   
   if (!header || !header.startsWith("Bearer ")) {
