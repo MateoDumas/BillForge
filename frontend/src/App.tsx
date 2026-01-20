@@ -11,6 +11,9 @@ import { ToastProvider, useToast } from "./context/ToastContext";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { Notifications } from "./components/Notifications";
 import { Login } from "./components/Login";
+import { Terms } from "./components/Terms";
+import { Privacy } from "./components/Privacy";
+import { Support } from "./components/Support";
 import {
   CreateSubscriptionResponse,
   InvoicesResponse,
