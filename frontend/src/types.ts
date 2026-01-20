@@ -4,12 +4,14 @@ export interface TenantMeResponse {
   roles: string[];
 }
 
+export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'grace_period' | 'canceled_auto';
+
 export interface SubscriptionResponse {
   tenantId: string;
   subscription: {
     id: string;
     planId: string;
-    status: string;
+    status: SubscriptionStatus;
     startDate: string;
     currentPeriodStart: string;
     currentPeriodEnd: string;
@@ -21,7 +23,7 @@ export interface CreateSubscriptionResponse {
   subscription: {
     id: string;
     planId: string;
-    status: string;
+    status: SubscriptionStatus;
     startDate: string;
     currentPeriodStart: string;
     currentPeriodEnd: string;
@@ -98,7 +100,13 @@ export interface AdminStatsResponse {
   totalTenants: number;
   activeSubscriptions: number;
   mrrCents: number;
+  arrCents: number;
   failedPaymentsCount: number;
+  revenueByPlan: {
+    name: string;
+    revenueCents: number;
+    count: number;
+  }[];
   currency: string;
 }
 
@@ -119,4 +127,17 @@ export interface AdminTenant {
   status: string;
   joinedAt: string;
   activeSubs: number;
+}
+
+export interface AuditLog {
+  id: string;
+  tenant_id?: string;
+  user_id?: string;
+  event_type: string;
+  severity: 'info' | 'warning' | 'error' | 'critical';
+  message: string;
+  metadata?: any;
+  created_at: string;
+  tenant_name?: string;
+  user_email?: string;
 }

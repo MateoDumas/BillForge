@@ -3,6 +3,7 @@ import { RequestWithAuth } from "../middleware/auth";
 import { pool } from "../db";
 import { validate } from "../middleware/validation";
 import { cancelSubscriptionSchema, createSubscriptionSchema } from "../schemas";
+import { SubscriptionStatus } from "../types";
 
 export const subscriptionsRouter = Router();
 
@@ -66,12 +67,12 @@ subscriptionsRouter.post("/", validate(createSubscriptionSchema), async (req: Re
 
     await client.query(
       "update subscription set status = $1, cancel_at_period_end = true where tenant_id = $2 and status = $3",
-      ["canceled", req.auth.tenantId, "active"]
+      [SubscriptionStatus.CANCELED, req.auth.tenantId, SubscriptionStatus.ACTIVE]
     );
 
     const insertResult = await client.query(
       "insert into subscription (id, tenant_id, plan_id, status, start_date, current_period_start, current_period_end, cancel_at_period_end) values (gen_random_uuid(), $1, $2, $3, current_date, current_date, current_date + interval '30 days', false) returning id, status, start_date, current_period_start, current_period_end",
-      [req.auth.tenantId, planId, "active"]
+      [req.auth.tenantId, planId, SubscriptionStatus.ACTIVE]
     );
 
     const row = insertResult.rows[0];
@@ -111,7 +112,7 @@ subscriptionsRouter.delete("/:id", validate(cancelSubscriptionSchema), async (re
   try {
     const result = await pool.query(
       "update subscription set status = $1, cancel_at_period_end = true where id = $2 and tenant_id = $3 returning id, status, cancel_at_period_end",
-      ["canceled", subscriptionId, req.auth.tenantId]
+      [SubscriptionStatus.CANCELED, subscriptionId, req.auth.tenantId]
     );
 
     if (result.rows.length === 0) {

@@ -66,7 +66,8 @@ export async function initDb() {
         current_period_end DATE NOT NULL,
         cancel_at_period_end BOOLEAN NOT NULL DEFAULT FALSE,
         external_customer_id TEXT,
-        external_subscription_id TEXT
+        external_subscription_id TEXT,
+        last_dunning_sent_at TIMESTAMPTZ
       );
 
       CREATE TABLE IF NOT EXISTS invoice (
@@ -133,6 +134,16 @@ export async function initDb() {
         type VARCHAR(20) NOT NULL, -- 'info', 'success', 'warning', 'error'
         message TEXT NOT NULL,
         read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID REFERENCES tenant(id), -- Nullable for system events
+        user_id UUID REFERENCES app_user(id), -- Nullable for system events
+        event_type TEXT NOT NULL,
+        severity TEXT NOT NULL, -- info, warning, error, critical
+        message TEXT NOT NULL,
+        metadata JSONB,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);

@@ -2,11 +2,18 @@ import { Router, Response } from "express";
 import { RequestWithAuth } from "../middleware/auth";
 import { requireSuperAdmin } from "../middleware/adminAuth";
 import { pool } from "../db";
+import { SubscriptionStatus } from "../types";
+import { runDailyBillingJob } from "../jobs/billingJob";
+import { runDunningJob } from "../jobs/dunningJob";
+import { AuditService } from "../services/auditService";
 
 export const adminRouter = Router();
 
 // Protect all admin routes
 adminRouter.use(requireSuperAdmin);
+
+// Helper for active statuses
+const activeStatuses = [SubscriptionStatus.ACTIVE, SubscriptionStatus.PAST_DUE, SubscriptionStatus.GRACE_PERIOD];
 
 // Global Stats (MRR, Total Tenants, Active Subscriptions)
 adminRouter.get("/stats", async (_req: RequestWithAuth, res: Response) => {
@@ -16,7 +23,7 @@ adminRouter.get("/stats", async (_req: RequestWithAuth, res: Response) => {
     const totalTenants = parseInt(tenantsResult.rows[0].count, 10);
 
     // 2. Active Subscriptions
-    const subsResult = await pool.query("SELECT count(*) as count FROM subscription WHERE status = 'active'");
+    const subsResult = await pool.query("SELECT count(*) as count FROM subscription WHERE status = ANY($1)", [activeStatuses]);
     const activeSubscriptions = parseInt(subsResult.rows[0].count, 10);
 
     // 3. MRR (Monthly Recurring Revenue)
@@ -25,8 +32,8 @@ adminRouter.get("/stats", async (_req: RequestWithAuth, res: Response) => {
       SELECT sum(p.base_price_cents) as mrr
       FROM subscription s
       JOIN plan p ON s.plan_id = p.id
-      WHERE s.status = 'active'
-    `);
+      WHERE s.status = ANY($1)
+    `, [activeStatuses]);
     const mrrCents = parseInt(mrrResult.rows[0].mrr || '0', 10);
 
     // 4. Failed Payments (Last 30 days)
@@ -38,11 +45,32 @@ adminRouter.get("/stats", async (_req: RequestWithAuth, res: Response) => {
     `);
     const failedPaymentsCount = parseInt(failedPaymentsResult.rows[0].count, 10);
 
+    // 5. ARR (Annual Recurring Revenue) - Approx MRR * 12
+    const arrCents = mrrCents * 12;
+
+    // 6. Revenue by Plan
+    const revenueByPlanResult = await pool.query(`
+      SELECT p.name, sum(p.base_price_cents) as revenue_cents, count(s.id) as sub_count
+      FROM subscription s
+      JOIN plan p ON s.plan_id = p.id
+      WHERE s.status = ANY($1)
+      GROUP BY p.name
+      ORDER BY revenue_cents DESC
+    `, [activeStatuses]);
+    
+    const revenueByPlan = revenueByPlanResult.rows.map(row => ({
+      name: row.name,
+      revenueCents: parseInt(row.revenue_cents, 10),
+      count: parseInt(row.sub_count, 10)
+    }));
+
     res.json({
       totalTenants,
       activeSubscriptions,
       mrrCents,
+      arrCents,
       failedPaymentsCount,
+      revenueByPlan,
       currency: "EUR"
     });
   } catch (error) {
@@ -91,12 +119,12 @@ adminRouter.get("/failures", async (_req: RequestWithAuth, res: Response) => {
 adminRouter.get("/tenants", async (_req: RequestWithAuth, res: Response) => {
     try {
       const result = await pool.query(`
-        SELECT t.id, t.name, t.billing_email, t.status, t.created_at,
-               (SELECT count(*) FROM subscription s WHERE s.tenant_id = t.id AND s.status = 'active') as active_subs
-        FROM tenant t
-        ORDER BY t.created_at DESC
-        LIMIT 50
-      `);
+      SELECT t.id, t.name, t.billing_email, t.status, t.created_at,
+             (SELECT count(*) FROM subscription s WHERE s.tenant_id = t.id AND s.status = ANY($1)) as active_subs
+      FROM tenant t
+      ORDER BY t.created_at DESC
+      LIMIT 50
+    `, [activeStatuses]);
   
       const tenants = result.rows.map(row => ({
         id: row.id,
@@ -113,3 +141,40 @@ adminRouter.get("/tenants", async (_req: RequestWithAuth, res: Response) => {
       res.status(500).json({ error: "Failed to fetch tenants" });
     }
   });
+
+// Audit Logs
+adminRouter.get("/logs", async (req: RequestWithAuth, res: Response) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const logs = await AuditService.getLogs(limit, offset);
+    res.json(logs);
+  } catch (error) {
+    console.error("Error fetching audit logs:", error);
+    res.status(500).json({ error: "Failed to fetch audit logs" });
+  }
+});
+
+// Trigger Billing Job
+adminRouter.post("/jobs/billing", async (_req: RequestWithAuth, res: Response) => {
+  try {
+    // Run in background
+    runDailyBillingJob().catch((err: unknown) => console.error("Manual billing job failed:", err));
+    res.json({ message: "Billing job triggered" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to trigger billing job" });
+  }
+});
+
+// Trigger Dunning Job
+adminRouter.post("/jobs/dunning", async (_req: RequestWithAuth, res: Response) => {
+  try {
+    // Run in background
+    runDunningJob().catch((err: unknown) => console.error("Manual dunning job failed:", err));
+    res.json({ message: "Dunning job triggered" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to trigger dunning job" });
+  }
+});
+
+export { adminRouter as default };

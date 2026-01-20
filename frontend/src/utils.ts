@@ -6,10 +6,13 @@ export function getStatusBadgeClass(status: string) {
       return "badge badge-success";
     case "open":
     case "pending":
+    case "grace_period":
       return "badge badge-warning";
     case "failed":
     case "cancelled":
+    case "canceled":
     case "past_due":
+    case "canceled_auto":
       return "badge badge-error";
     default:
       return "badge badge-neutral";
