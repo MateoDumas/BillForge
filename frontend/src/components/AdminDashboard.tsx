@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getWithAuth, postWithAuth } from '../api';
-import { AdminStatsResponse, FailedPayment, AdminTenant, AuditLog } from '../types';
+import { AdminStatsResponse, FailedPayment, AdminTenant, AuditLog, Plan } from '../types';
 
 interface AdminDashboardProps {
   token: string;
@@ -11,7 +11,20 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
   const [failures, setFailures] = useState<FailedPayment[]>([]);
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // New Plan Form State
+  const [showCreatePlan, setShowCreatePlan] = useState(false);
+  const [createPlanForm, setCreatePlanForm] = useState({
+    code: '',
+    name: '',
+    billingPeriod: 'monthly',
+    basePriceCents: 0,
+    currency: 'EUR',
+    isUsageBased: false,
+    usageMetric: ''
+  });
 
   const triggerJob = async (jobName: string) => {
     if (!confirm(`¿Estás seguro de ejecutar el job: ${jobName}?`)) return;
@@ -28,21 +41,49 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
     }
   };
 
+  const handleCreatePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await postWithAuth<Plan>('/admin/plans', createPlanForm, token);
+      if (res.error) {
+        alert(`Error creando plan: ${res.error}`);
+      } else if (res.data) {
+        setPlans([...plans, res.data]);
+        setShowCreatePlan(false);
+        setCreatePlanForm({
+          code: '',
+          name: '',
+          billingPeriod: 'monthly',
+          basePriceCents: 0,
+          currency: 'EUR',
+          isUsageBased: false,
+          usageMetric: ''
+        });
+        alert('Plan creado exitosamente');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error al crear plan');
+    }
+  };
+
   useEffect(() => {
     async function loadAdminData() {
       setLoading(true);
       try {
-        const [statsRes, failuresRes, tenantsRes, logsRes] = await Promise.all([
+        const [statsRes, failuresRes, tenantsRes, logsRes, plansRes] = await Promise.all([
           getWithAuth<AdminStatsResponse>('/admin/stats', token),
           getWithAuth<FailedPayment[]>('/admin/failures', token),
           getWithAuth<AdminTenant[]>('/admin/tenants', token),
-          getWithAuth<AuditLog[]>('/admin/logs', token)
+          getWithAuth<AuditLog[]>('/admin/logs', token),
+          getWithAuth<Plan[]>('/admin/plans', token)
         ]);
 
         if (statsRes.data) setStats(statsRes.data);
         if (failuresRes.data) setFailures(failuresRes.data);
         if (tenantsRes.data) setTenants(tenantsRes.data);
         if (logsRes.data) setLogs(logsRes.data);
+        if (plansRes.data) setPlans(plansRes.data);
       } catch (error) {
         console.error("Failed to load admin data", error);
       } finally {
@@ -102,6 +143,112 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
            </div>
         </div>
       )}
+
+      {/* Plans Management */}
+      <div className="card mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Gestión de Planes</h2>
+          <button 
+            className="btn btn-sm btn-primary"
+            onClick={() => setShowCreatePlan(!showCreatePlan)}
+          >
+            {showCreatePlan ? 'Cancelar' : 'Nuevo Plan'}
+          </button>
+        </div>
+
+        {showCreatePlan && (
+          <form onSubmit={handleCreatePlan} className="bg-base-200 p-4 rounded-lg mb-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+             {/* Form Fields */}
+             <div>
+               <label className="label">Código (Slug)</label>
+               <input 
+                 type="text" 
+                 className="input input-bordered w-full" 
+                 value={createPlanForm.code}
+                 onChange={e => setCreatePlanForm({...createPlanForm, code: e.target.value})}
+                 required
+                 placeholder="e.g. pro-monthly"
+               />
+             </div>
+             <div>
+               <label className="label">Nombre</label>
+               <input 
+                 type="text" 
+                 className="input input-bordered w-full" 
+                 value={createPlanForm.name}
+                 onChange={e => setCreatePlanForm({...createPlanForm, name: e.target.value})}
+                 required
+                 placeholder="e.g. Pro Plan"
+               />
+             </div>
+             <div>
+               <label className="label">Precio Base (Cents)</label>
+               <input 
+                 type="number" 
+                 className="input input-bordered w-full" 
+                 value={createPlanForm.basePriceCents}
+                 onChange={e => setCreatePlanForm({...createPlanForm, basePriceCents: parseInt(e.target.value) || 0})}
+                 required
+               />
+             </div>
+             <div>
+               <label className="label">Moneda</label>
+               <select 
+                 className="select select-bordered w-full"
+                 value={createPlanForm.currency}
+                 onChange={e => setCreatePlanForm({...createPlanForm, currency: e.target.value})}
+               >
+                 <option value="EUR">EUR</option>
+                 <option value="USD">USD</option>
+               </select>
+             </div>
+             <div>
+               <label className="label">Periodo</label>
+               <select 
+                 className="select select-bordered w-full"
+                 value={createPlanForm.billingPeriod}
+                 onChange={e => setCreatePlanForm({...createPlanForm, billingPeriod: e.target.value})}
+               >
+                 <option value="monthly">Monthly</option>
+                 <option value="yearly">Yearly</option>
+               </select>
+             </div>
+             <div className="md:col-span-2">
+               <button type="submit" className="btn btn-primary w-full">Crear Plan</button>
+             </div>
+          </form>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-sm text-muted border-b border-border">
+                <th className="pb-2">Código</th>
+                <th className="pb-2">Nombre</th>
+                <th className="pb-2">Precio</th>
+                <th className="pb-2">Periodo</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plans.map(plan => (
+                <tr key={plan.id} className="border-b border-border last:border-0">
+                  <td className="py-3 font-mono text-sm">{plan.code}</td>
+                  <td className="py-3 font-medium">{plan.name}</td>
+                  <td className="py-3">
+                    {(plan.basePriceCents / 100).toLocaleString('es-ES', { style: 'currency', currency: plan.currency })}
+                  </td>
+                  <td className="py-3 capitalize">{plan.billingPeriod}</td>
+                </tr>
+              ))}
+              {plans.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="py-4 text-center text-muted">No hay planes configurados.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Operations */}
       <div className="card mb-8">

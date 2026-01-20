@@ -70,8 +70,11 @@ export interface PlansResponseItem {
   billingPeriod: string;
   basePriceCents: number;
   currency: string;
+  isUsageBased?: boolean;
+  usageMetric?: string | null;
 }
 
+export type Plan = PlansResponseItem;
 export type PlansResponse = PlansResponseItem[];
 
 export interface StatsResponse {

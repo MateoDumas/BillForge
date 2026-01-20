@@ -177,4 +177,67 @@ adminRouter.post("/jobs/dunning", async (_req: RequestWithAuth, res: Response) =
   }
 });
 
+// List Plans
+adminRouter.get("/plans", async (_req: RequestWithAuth, res: Response) => {
+  try {
+    const result = await pool.query("SELECT * FROM plan ORDER BY name ASC");
+    const plans = result.rows.map(row => ({
+      id: row.id,
+      code: row.code,
+      name: row.name,
+      billingPeriod: row.billing_period,
+      basePriceCents: row.base_price_cents,
+      currency: row.currency,
+      isUsageBased: row.is_usage_based,
+      usageMetric: row.usage_metric
+    }));
+    res.json(plans);
+  } catch (error) {
+    console.error("Error fetching plans:", error);
+    res.status(500).json({ error: "Failed to fetch plans" });
+  }
+});
+
+// Create Plan
+adminRouter.post("/plans", async (req: RequestWithAuth, res: Response) => {
+  try {
+    const { code, name, billing_period, base_price_cents, currency, is_usage_based, usage_metric } = req.body;
+    
+    // Basic validation
+    if (!code || !name || !billing_period || base_price_cents === undefined || !currency) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO plan (code, name, billing_period, base_price_cents, currency, is_usage_based, usage_metric)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [code, name, billing_period, base_price_cents, currency, is_usage_based || false, usage_metric || null]
+    );
+
+    await AuditService.log({
+      tenantId: "system", 
+      eventType: "plan.created",
+      severity: "info",
+      message: `Plan created: ${name} (${code})`,
+      metadata: { planId: result.rows[0].id }
+    });
+
+    const newPlan = result.rows[0];
+    res.json({
+      id: newPlan.id,
+      code: newPlan.code,
+      name: newPlan.name,
+      billingPeriod: newPlan.billing_period,
+      basePriceCents: newPlan.base_price_cents,
+      currency: newPlan.currency,
+      isUsageBased: newPlan.is_usage_based,
+      usageMetric: newPlan.usage_metric
+    });
+  } catch (error) {
+    console.error("Error creating plan:", error);
+    res.status(500).json({ error: "Failed to create plan" });
+  }
+});
+
 export { adminRouter as default };
