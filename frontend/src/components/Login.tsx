@@ -10,12 +10,10 @@ export function Login({ onLogin }: LoginProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Use env var or default to Railway production URL if not set
-  // HARDCODED FALLBACK FOR DEBUGGING
-  const API_URL = "https://billforge.up.railway.app";
-  // const API_URL = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) 
-  //   ? import.meta.env.VITE_API_URL 
-  //   : "https://billforge.up.railway.app";
+  // Use env var or default to localhost for development
+  const API_URL = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.startsWith('http')) 
+    ? import.meta.env.VITE_API_URL 
+    : "http://localhost:3000";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
