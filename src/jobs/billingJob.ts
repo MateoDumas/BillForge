@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { SubscriptionStatus } from "../types";
 import { alertService } from "../services/alertService";
 import { AuditService } from "../services/auditService";
+import { JobService } from "../services/jobService";
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 const stripeClient = stripeSecretKey
@@ -10,14 +11,20 @@ const stripeClient = stripeSecretKey
   : null;
 
 export async function runDailyBillingJob() {
-  console.log(`[BillingJob] Starting daily billing job at ${new Date().toISOString()}`);
+  const jobId = await JobService.startJob("DailyBilling", { startTime: new Date().toISOString() });
+  console.log(`[BillingJob] Starting daily billing job (ID: ${jobId}) at ${new Date().toISOString()}`);
+  
   const client = await pool.connect();
+  const stats = { total: 0, processed: 0, failed: 0 };
 
   try {
     const subscriptions = await client.query(
       "select id, tenant_id, plan_id, status, current_period_start, current_period_end from subscription where status = ANY($1) and current_period_end <= current_date",
       [[SubscriptionStatus.ACTIVE, SubscriptionStatus.PAST_DUE, SubscriptionStatus.GRACE_PERIOD]]
     );
+
+    stats.total = subscriptions.rows.length;
+    await JobService.updateJob(jobId, { status: "processing_subscriptions", stats });
 
     console.log(`[BillingJob] Found ${subscriptions.rows.length} subscriptions to process`);
 
@@ -40,6 +47,7 @@ export async function runDailyBillingJob() {
         if (planResult.rows.length === 0) {
           await alertService.notifyError("BillingJob - Plan Lookup", `Plan not found for subscription ${sub.id}`);
           await client.query("rollback");
+          stats.failed++;
           continue;
         }
 
@@ -84,14 +92,19 @@ export async function runDailyBillingJob() {
         );
 
         await client.query("commit");
+        stats.processed++;
         console.log(`[BillingJob] Processed subscription ${sub.id} successfully. Invoice: ${invoiceId}`);
       } catch (innerError) {
         await client.query("rollback");
+        stats.failed++;
         await alertService.notifyError("BillingJob - Subscription Processing", innerError as Error, { subscriptionId: sub.id });
         await AuditService.logSystem("BillingJob", "error", `Error processing subscription ${sub.id}`, { error: (innerError as Error).message });
       }
     }
+
+    await JobService.completeJob(jobId, { stats, endTime: new Date().toISOString() });
   } catch (error) {
+    await JobService.failJob(jobId, error as Error, { stats });
     await alertService.notifyCritical(`BillingJob Fatal Error: ${(error as Error).message}`);
     await AuditService.logSystem("BillingJob", "critical", `Fatal error in billing job`, { error: (error as Error).message });
     throw error;

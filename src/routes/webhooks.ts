@@ -17,6 +17,7 @@ export async function stripeWebhookHandler(req: Request, res: Response) {
 
   if (typeof signature !== "string") {
     console.error("[Webhook] Missing Stripe signature");
+    await AuditService.logSystem("webhook.error", "error", "Missing Stripe signature");
     return res.status(400).send("Missing Stripe signature");
   }
 
@@ -32,6 +33,7 @@ export async function stripeWebhookHandler(req: Request, res: Response) {
     );
   } catch (err) {
     console.error("[Webhook] Signature verification failed", err);
+    await AuditService.logSystem("webhook.error", "error", "Webhook signature verification failed", { error: (err as Error).message });
     return res.status(400).send("Webhook signature verification failed");
   }
 

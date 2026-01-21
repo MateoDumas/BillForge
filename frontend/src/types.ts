@@ -98,26 +98,9 @@ export type PlansResponse = PlansResponseItem[];
 
 export interface StatsResponse {
   totalSpentCents: number;
-  pendingInvoicesCount: number;
-  pendingInvoicesAmountCents: number;
-  nextBillingDate: string | null;
-  nextBillingAmountCents: number | null;
   currency: string;
 }
 
-export interface Notification {
-  id: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  message: string;
-  read: boolean;
-  createdAt: string;
-}
-
-export interface NotificationsResponse {
-  notifications: Notification[];
-}
-
-// Admin Types
 export interface AdminStatsResponse {
   totalTenants: number;
   activeSubscriptions: number;
@@ -134,32 +117,40 @@ export interface AdminStatsResponse {
 
 export interface FailedPayment {
   id: string;
-  amountCents: number;
+  amount_cents: number;
   currency: string;
-  createdAt: string;
+  created_at: string;
   status: string;
-  tenantName: string;
-  billingEmail: string;
+  tenant_name: string;
+  billing_email: string;
 }
 
 export interface AdminTenant {
   id: string;
   name: string;
-  email: string;
+  billing_email: string;
   status: string;
-  joinedAt: string;
-  activeSubs: number;
+  created_at: string;
 }
 
 export interface AuditLog {
   id: string;
-  tenant_id?: string;
-  user_id?: string;
+  tenant_id: string;
+  user_id: string;
   event_type: string;
-  severity: 'info' | 'warning' | 'error' | 'critical';
+  severity: string;
   message: string;
-  metadata?: any;
+  metadata: any;
   created_at: string;
   tenant_name?: string;
   user_email?: string;
+}
+
+export interface JobLogEntry {
+  id: string;
+  job_name: string;
+  status: 'running' | 'completed' | 'failed';
+  started_at: string;
+  completed_at?: string;
+  details?: any;
 }

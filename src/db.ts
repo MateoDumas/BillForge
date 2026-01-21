@@ -19,8 +19,22 @@ export async function initDb() {
     // Enable pgcrypto
     await client.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
 
-    // Migrations
-    await client.query(`ALTER TABLE tenant ADD COLUMN IF NOT EXISTS api_key TEXT;`);
+    // Job History Table
+  await client.query(`
+    CREATE TABLE IF NOT EXISTS job_history (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      job_name TEXT NOT NULL,
+      status TEXT NOT NULL,
+      started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ,
+      details JSONB
+    );
+  `);
+
+  // Migrations
+  await client.query(`ALTER TABLE tenant ADD COLUMN IF NOT EXISTS api_key TEXT;`);
+  await client.query(`ALTER TABLE job_history ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;`);
 
     // Create tables
     await client.query(`

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getWithAuth, postWithAuth } from '../api';
-import { AdminStatsResponse, FailedPayment, AdminTenant, AuditLog, Plan } from '../types';
+import { AdminStatsResponse, FailedPayment, AdminTenant, AuditLog, Plan, JobLogEntry } from '../types';
 
 interface AdminDashboardProps {
   token: string;
@@ -12,6 +12,7 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [jobs, setJobs] = useState<JobLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   // New Plan Form State
@@ -71,12 +72,13 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
     async function loadAdminData() {
       setLoading(true);
       try {
-        const [statsRes, failuresRes, tenantsRes, logsRes, plansRes] = await Promise.all([
+        const [statsRes, failuresRes, tenantsRes, logsRes, plansRes, jobsRes] = await Promise.all([
           getWithAuth<AdminStatsResponse>('/admin/stats', token),
           getWithAuth<FailedPayment[]>('/admin/failures', token),
           getWithAuth<AdminTenant[]>('/admin/tenants', token),
           getWithAuth<AuditLog[]>('/admin/logs', token),
-          getWithAuth<Plan[]>('/admin/plans', token)
+          getWithAuth<Plan[]>('/admin/plans', token),
+          getWithAuth<JobLogEntry[]>('/admin/jobs', token)
         ]);
 
         if (statsRes.data) setStats(statsRes.data);
@@ -84,6 +86,7 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
         if (tenantsRes.data) setTenants(tenantsRes.data);
         if (logsRes.data) setLogs(logsRes.data);
         if (plansRes.data) setPlans(plansRes.data);
+        if (jobsRes.data) setJobs(jobsRes.data);
       } catch (error) {
         console.error("Failed to load admin data", error);
       } finally {
@@ -266,6 +269,54 @@ export function AdminDashboard({ token }: AdminDashboardProps) {
           >
             Ejecutar Dunning Job
           </button>
+        </div>
+      </div>
+
+      {/* Job History */}
+      <div className="card mb-8">
+        <h2 className="text-xl font-bold mb-4">Historial de Jobs</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="text-left text-sm text-muted border-b border-border">
+                <th className="pb-2">Job</th>
+                <th className="pb-2">Estado</th>
+                <th className="pb-2">Inicio</th>
+                <th className="pb-2">Fin</th>
+                <th className="pb-2">Detalles</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jobs.map(job => (
+                <tr key={job.id} className="border-b border-border last:border-0">
+                  <td className="py-3 font-medium">{job.job_name}</td>
+                  <td className="py-3">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      job.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      job.status === 'failed' ? 'bg-red-100 text-red-800' :
+                      'bg-blue-100 text-blue-800'
+                    }`}>
+                      {job.status}
+                    </span>
+                  </td>
+                  <td className="py-3 text-sm text-muted">
+                    {new Date(job.started_at).toLocaleString()}
+                  </td>
+                  <td className="py-3 text-sm text-muted">
+                    {job.completed_at ? new Date(job.completed_at).toLocaleString() : '-'}
+                  </td>
+                  <td className="py-3 text-xs font-mono max-w-xs truncate">
+                    {JSON.stringify(job.details)}
+                  </td>
+                </tr>
+              ))}
+              {jobs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-muted">No hay historial de jobs.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 

@@ -6,6 +6,7 @@ import { SubscriptionStatus } from "../types";
 import { runDailyBillingJob } from "../jobs/billingJob";
 import { runDunningJob } from "../jobs/dunningJob";
 import { AuditService } from "../services/auditService";
+import { JobService } from "../services/jobService";
 
 export const adminRouter = Router();
 
@@ -237,6 +238,19 @@ adminRouter.post("/plans", async (req: RequestWithAuth, res: Response) => {
   } catch (error) {
     console.error("Error creating plan:", error);
     res.status(500).json({ error: "Failed to create plan" });
+  }
+});
+
+// Job History
+adminRouter.get("/jobs", async (req: RequestWithAuth, res: Response) => {
+  try {
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+    const offset = req.query.offset ? parseInt(req.query.offset as string) : 0;
+    const jobs = await JobService.getJobHistory(limit, offset);
+    res.json(jobs);
+  } catch (error) {
+    console.error("Error fetching job history:", error);
+    res.status(500).json({ error: "Failed to fetch job history" });
   }
 });
 
