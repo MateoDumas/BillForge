@@ -1,8 +1,8 @@
 const hostname = window.location.hostname;
-const isLocal = true; // Force true
-const defaultApiUrl = "http://localhost:3000";
+const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+const defaultApiUrl = import.meta.env.VITE_API_URL || (isLocal ? "http://localhost:3000" : "https://billforge-production.onrender.com");
 
-console.log("API Config (FORCED):", { hostname, isLocal, defaultApiUrl });
+console.log("API Config:", { hostname, isLocal, defaultApiUrl });
 
 export interface ApiResult<T> {
   data: T | null;
