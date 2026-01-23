@@ -1,8 +1,8 @@
 # BillForge 🚀
 
-**Facturación sólida. Infraestructura real.**
+**Billing Infrastructure for SaaS Builders.**
 
-BillForge es una plataforma SaaS integral diseñada para simplificar la gestión de facturación, suscripciones y pagos para empresas modernas. Ofrece una solución completa desde la gestión de clientes hasta la generación automatizada de facturas en PDF.
+BillForge no es solo un panel de administración; es la infraestructura de facturación que todo SaaS necesita. Diseñado para desarrolladores que construyen productos escalables, BillForge maneja la complejidad de suscripciones, pagos recurrentes y facturación automática para que tú te enfoques en tu producto principal.
 
 ## 💡 Concepto Técnico
 
