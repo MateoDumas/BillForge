@@ -99,6 +99,10 @@ export type PlansResponse = PlansResponseItem[];
 export interface StatsResponse {
   totalSpentCents: number;
   currency: string;
+  pendingInvoicesCount: number;
+  pendingInvoicesAmountCents: number;
+  nextBillingDate: string | null;
+  nextBillingAmountCents: number | null;
 }
 
 export interface AdminStatsResponse {
@@ -117,20 +121,21 @@ export interface AdminStatsResponse {
 
 export interface FailedPayment {
   id: string;
-  amount_cents: number;
+  amountCents: number;
   currency: string;
-  created_at: string;
+  createdAt: string;
   status: string;
-  tenant_name: string;
-  billing_email: string;
+  tenantName: string;
+  billingEmail: string;
 }
 
 export interface AdminTenant {
   id: string;
   name: string;
-  billing_email: string;
+  email: string;
   status: string;
-  created_at: string;
+  joinedAt: string;
+  activeSubs: number;
 }
 
 export interface AuditLog {
@@ -153,4 +158,12 @@ export interface JobLogEntry {
   started_at: string;
   completed_at?: string;
   details?: any;
+}
+
+export interface Notification {
+  id: string;
+  type: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
 }

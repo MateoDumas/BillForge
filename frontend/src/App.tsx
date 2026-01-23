@@ -26,7 +26,7 @@ import {
   TenantMeResponse
 } from "./types";
 
-type Tab = "dashboard" | "subscription" | "invoices" | "payments" | "terms" | "privacy" | "support";
+type Tab = "dashboard" | "subscription" | "invoices" | "payments" | "terms" | "privacy" | "support" | "admin" | "profile";
 
 export function App() {
   return (
