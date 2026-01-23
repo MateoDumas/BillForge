@@ -19,6 +19,20 @@ export async function initDb() {
     // Enable pgcrypto
     await client.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
 
+    // Audit Log Table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        tenant_id UUID REFERENCES tenant(id),
+        user_id UUID REFERENCES app_user(id),
+        event_type TEXT NOT NULL,
+        severity TEXT NOT NULL,
+        message TEXT NOT NULL,
+        metadata JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
     // Job History Table
   await client.query(`
     CREATE TABLE IF NOT EXISTS job_history (
